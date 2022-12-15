@@ -1,0 +1,13 @@
+{
+  "name": "n1-solat-bot",
+  "version": "1.0.0",
+  "description": "simple webhook trigger based on solat times",
+  "main": "index.js",
+  "devDependencies": {},
+  "scripts": {
+    "start": "nodemon index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "0xN1",
+  "license": "ISC"
+}
