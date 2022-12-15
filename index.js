@@ -1,28 +1,25 @@
+//
+//  Project: Waktu Solat Discord Webhook Bot
+//  Author:  Muhammad Syahman
+//  Date:    2021-10-15
+//  Data:    2022-solat.json from JAKIM (https://www.e-solat.gov.my/index.php?r=esolatApi/takwimsolat&period=year&zone=WLY01)
+//
+
 const fs = require("fs");
 const path = require("path");
-const jsonPath = path.join(__dirname, "2022-solat.json");
+
+// Get the data from the json file
+const jsonPath = path.join(__dirname, "./data/2022-solat.json");
+
+// Read the file
 const json = JSON.parse(fs.readFileSync(jsonPath, "utf8"));
 
-// const { WEBHOOK_URL } = require("./config.js");
-
+// Get all the timestamps
 const timestamps = json.prayerTime.map((item) => {
   return item;
 });
 
-// get all the dates in the timestamp
-
-// const dates = timestamps.map((item) => {
-//   return item.date;
-// });
-// console.log(dates);
-
-// const sampleDate = "31-Dec-2022";
-// const sampleTime = "05:48:00";
-// console.log(sampleDate + " " + sampleTime);
-// console.log(Date.parse(sampleDate + " " + sampleTime));
-
-// get the timestamp for a specific date
-
+// Get today's date in the format dd-MMM-yyyy
 const today = new Date()
   .toLocaleDateString("en-MY", {
     day: "numeric",
@@ -31,64 +28,33 @@ const today = new Date()
   })
   .split(" ")
   .join("-");
-// console.log("today", today, Date.parse(today));
 
-// const formattedDate = Date.now()
-// const todayDate = today.getDate();
-// const todayMonth = today.getMonth() + 1;
-// const todayYear = today.getFullYear();
-
-// const todayString = `${todayDate}-${todayMonth}-${todayYear}`;
-
-// console.log(todayString);
-
+// Get all the data for today
 const day = timestamps.find((item) => {
   return item.date === today;
 });
 
-// console.log(day);
-
-// const dhuhrTimestamp = Date.parse(day.date + " " + day.dhuhr);
-// console.log("dhuhr", dhuhrTimestamp);
-
-// const now = Date.now();
-// console.log("now", now);
-
-// get time elapsed since dhuhr time
-
-// const timeElapsed = now - dhuhrTimestamp;
-// console.log("time elapsed", timeElapsed);
-
-// const timeElapsed = now - dhuhrTimestamp;
-// console.log("time elapsed", timeElapsed);
-
-// convert time elapsed to hours, minutes and seconds
-// const hours = Math.floor(timeElapsed / 1000 / 60 / 60);
-// const minutes = Math.floor((timeElapsed / 1000 / 60 / 60 - hours) * 60);
-// const seconds = Math.floor(
-//   ((timeElapsed / 1000 / 60 / 60 - hours) * 60 - minutes) * 60
-// );
-// console.log(hours, minutes, seconds);
-
-// put all content in day into an array
-// console.log("day", day);
+// Filter out the keys we want
 const filteredKeys = ["fajr", "dhuhr", "asr", "maghrib", "isha"];
 const filtered = Object.entries(day)
   .filter(([key]) => filteredKeys.includes(key))
   .map((item) => item[1]);
-// console.log("filtered", filtered);
 
+// Convert to timestamp
 const converted = filtered.map((item) => {
   const time = Date.parse(day.date + " " + item);
   return time;
 });
-// console.log("converted", converted);
 
+// Combine the keys and values
 const combined = filteredKeys.map((key, index) => {
   return { [key]: converted[index] };
 });
-// console.log("combined", combined);
 
+// The updated data
+const waktuSolat = combined;
+
+// Discord webhook data
 const embedData = {
   content: null,
   embeds: [
@@ -135,6 +101,7 @@ const embedData = {
   attachments: [],
 };
 
+// Convert name to readable name
 function betterName(name) {
   switch (name) {
     case "fajr":
@@ -150,6 +117,7 @@ function betterName(name) {
   }
 }
 
+// Prepare data for discord webhook
 function prepareData(name) {
   const base = embedData;
   const embed = base.embeds[0];
@@ -172,9 +140,9 @@ function prepareData(name) {
   console.log(base, base.embeds[0]);
 }
 
+// Send to discord webhook
 async function send() {
   console.log("Sending to discord...");
-  // send to discord webhook
   const hook = process.env.WEBHOOK_URL;
   const data = embedData;
   await fetch(hook, {
@@ -187,17 +155,8 @@ async function send() {
   console.log("Sent to discord!");
 }
 
-// const test = [
-//   { one: 1671097150000 },
-//   { two: 1671092950000 },
-//   { three: 1671099340000 },
-//   { four: 1671093920000 },
-//   { five: 1671097550000 },
-// ];
-
-const waktuSolat = combined;
-// console.log(waktuSolat);
-
+// Check if the current time is within 500ms of the timestamp
+// If it is, prepare data and send to discord webhook
 function checkData() {
   const now = Date.now();
   waktuSolat.forEach((el) => {
@@ -212,6 +171,7 @@ function checkData() {
   });
 }
 
+// Check every second
 setInterval(() => {
   checkData();
 }, 1000);
