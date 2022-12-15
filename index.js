@@ -181,6 +181,5 @@ setInterval(() => {
 
 console.log("Bot is running...");
 
-// test run
-prepareData("isha");
-send();
+// Run the bot
+checkData();
