@@ -13,5 +13,8 @@
   },
   "author": "0xN1",
   "license": "ISC",
-  "dependencies": {}
+  "dependencies": {
+    "node-fetch": "2"
+  },
+  "type": "commonjs"
 }

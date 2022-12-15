@@ -7,6 +7,7 @@
 
 const fs = require("fs");
 const path = require("path");
+const fetch = require("node-fetch");
 
 const { WEBHOOK_URL } = require("./config.json");
 
@@ -179,3 +180,7 @@ setInterval(() => {
 }, 1000);
 
 console.log("Bot is running...");
+
+// test run
+prepareData("isha");
+send();
