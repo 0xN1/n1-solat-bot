@@ -8,6 +8,8 @@
 const fs = require("fs");
 const path = require("path");
 
+const { WEBHOOK_URL } = require("./config.json");
+
 // Get the data from the json file
 const jsonPath = path.join(__dirname, "./data/2022-solat.json");
 
@@ -143,7 +145,7 @@ function prepareData(name) {
 // Send to discord webhook
 async function send() {
   console.log("Sending to discord...");
-  const hook = process.env.WEBHOOK_URL;
+  const hook = WEBHOOK_URL;
   const data = embedData;
   await fetch(hook, {
     method: "POST",
