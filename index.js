@@ -38,9 +38,9 @@ const todayOld = new Date()
 const today = moment().format("DD-MMM-YYYY");
 // console.log(todayOld, today);
 
-const nau = Date.now();
-const mNau = moment().format("x");
-const mLondon = moment().tz("Europe/London").format("x");
+// const nau = Date.now();
+// const mNau = moment().format("x");
+// const mLondon = moment().tz("Europe/London").format("x");
 // console.log(nau, mNau, mLondon);
 
 // Get all the data for today
@@ -62,7 +62,7 @@ const converted = filtered.map((item) => {
   const dmIso = iso + " " + item;
   // console.log("DM", dm, dmIso);
   // const momentParse = moment(day.date + " " + item).format("x");
-  const momentParseIso = moment(dmIso).format("x");
+  const momentParseIso = moment(dmIso).valueOf();
   // console.log("time", time, momentParseIso);
   return momentParseIso;
 });
@@ -183,7 +183,7 @@ async function send() {
 // Check if the current time is within 500ms of the timestamp
 // If it is, prepare data and send to discord webhook
 function checkData() {
-  const nowM = moment().format("x");
+  const nowM = moment().valueOf();
   // console.log(now, nowM);
   waktuSolat.forEach((el) => {
     const k = Object.keys(el)[0];
