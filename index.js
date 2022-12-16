@@ -36,12 +36,12 @@ const todayOld = new Date()
   .join("-");
 
 const today = moment().format("DD-MMM-YYYY");
-console.log(todayOld, today);
+// console.log(todayOld, today);
 
 const nau = Date.now();
 const mNau = moment().format("x");
-
-console.log(nau, mNau);
+const mLondon = moment().tz("Europe/London").format("x");
+// console.log(nau, mNau, mLondon);
 
 // Get all the data for today
 const day = timestamps.find((item) => {
@@ -57,7 +57,14 @@ const filtered = Object.entries(day)
 // Convert to timestamp
 const converted = filtered.map((item) => {
   const time = Date.parse(day.date + " " + item);
-  return time;
+  const iso = moment(day.date).format("YYYY-MM-DD");
+  const dm = day.date + " " + item;
+  const dmIso = iso + " " + item;
+  // console.log("DM", dm, dmIso);
+  // const momentParse = moment(day.date + " " + item).format("x");
+  const momentParseIso = moment(dmIso).format("x");
+  // console.log("time", time, momentParseIso);
+  return momentParseIso;
 });
 
 // Combine the keys and values
@@ -169,9 +176,9 @@ async function send() {
   console.log("Sent to discord!");
 }
 
-const x = Date.now();
-const x1 = moment().format("x");
-console.log(x, x1);
+// const x = Date.now();
+// const x1 = moment().format("x");
+// console.log(x, x1);
 
 // Check if the current time is within 500ms of the timestamp
 // If it is, prepare data and send to discord webhook
