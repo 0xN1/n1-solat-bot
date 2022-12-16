@@ -8,8 +8,11 @@
 const fs = require("fs");
 const path = require("path");
 const fetch = require("node-fetch");
+const moment = require("moment-timezone");
 
 const { WEBHOOK_URL } = require("./config.json");
+
+moment.tz.setDefault("Asia/Kuala_Lumpur");
 
 // Get the data from the json file
 const jsonPath = path.join(__dirname, "./data/2022-solat.json");
@@ -23,14 +26,22 @@ const timestamps = json.prayerTime.map((item) => {
 });
 
 // Get today's date in the format dd-MMM-yyyy
-const today = new Date()
-  .toLocaleDateString("en-MY", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  })
-  .split(" ")
-  .join("-");
+// const today = new Date()
+//   .toLocaleDateString("en-MY", {
+//     day: "numeric",
+//     month: "short",
+//     year: "numeric",
+//   })
+//   .split(" ")
+//   .join("-");
+
+const today = moment().format("DD-MMM-YYYY");
+// console.log(today);
+
+const nau = Date.now();
+// const momentNow = moment().format("x");
+
+// console.log(momentNow, nau);
 
 // Get all the data for today
 const day = timestamps.find((item) => {
@@ -158,14 +169,19 @@ async function send() {
   console.log("Sent to discord!");
 }
 
+const x = Date.now();
+const x1 = moment().format("x");
+console.log(x, x1);
+
 // Check if the current time is within 500ms of the timestamp
 // If it is, prepare data and send to discord webhook
 function checkData() {
-  const now = Date.now();
+  const nowM = moment().format("x");
+  // console.log(now, nowM);
   waktuSolat.forEach((el) => {
     const k = Object.keys(el)[0];
     const v = el[k];
-    const check = now < v + 500 && now > v - 500;
+    const check = nowM < v + 500 && nowM > v - 500;
 
     if (check) {
       prepareData(k);
