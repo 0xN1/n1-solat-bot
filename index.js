@@ -1,6 +1,6 @@
 //
 //  Project: Waktu Solat Discord Webhook Bot
-//  Author:  Muhammad Syahman
+//  Author:  Muhammad Syahman (0xN1)
 //  Date:    2021-10-15
 //  Data:    2022-solat.json from JAKIM (https://www.e-solat.gov.my/index.php?r=esolatApi/takwimsolat&period=year&zone=WLY01)
 //
@@ -9,8 +9,31 @@ const fs = require("fs");
 const path = require("path");
 const fetch = require("node-fetch");
 const moment = require("moment-timezone");
+require("dotenv").config();
 
-const { WEBHOOK_URL } = require("./config.json");
+const WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL;
+
+async function initDiscordHook() {
+  try {
+    console.log("Sending test to discord...");
+    const hook = WEBHOOK_URL;
+    const data = {
+      content: "waktu-solat-bot is running!",
+    };
+    await fetch(hook, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+    console.log("Sent test to discord!");
+  } catch (error) {
+    return console.log(error);
+  }
+}
+
+initDiscordHook();
 
 moment.tz.setDefault("Asia/Kuala_Lumpur");
 
@@ -25,23 +48,8 @@ const timestamps = json.prayerTime.map((item) => {
   return item;
 });
 
-// Get today's date in the format dd-MMM-yyyy
-const todayOld = new Date()
-  .toLocaleDateString("en-MY", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  })
-  .split(" ")
-  .join("-");
-
+// Get today's date
 const today = moment().format("DD-MMM-YYYY");
-// console.log(todayOld, today);
-
-// const nau = Date.now();
-// const mNau = moment().format("x");
-// const mLondon = moment().tz("Europe/London").format("x");
-// console.log(nau, mNau, mLondon);
 
 // Get all the data for today
 const day = timestamps.find((item) => {
@@ -56,14 +64,9 @@ const filtered = Object.entries(day)
 
 // Convert to timestamp
 const converted = filtered.map((item) => {
-  const time = Date.parse(day.date + " " + item);
   const iso = moment(day.date).format("YYYY-MM-DD");
-  const dm = day.date + " " + item;
   const dmIso = iso + " " + item;
-  // console.log("DM", dm, dmIso);
-  // const momentParse = moment(day.date + " " + item).format("x");
   const momentParseIso = moment(dmIso).valueOf();
-  // console.log("time", time, momentParseIso);
   return momentParseIso;
 });
 
@@ -176,15 +179,10 @@ async function send() {
   console.log("Sent to discord!");
 }
 
-// const x = Date.now();
-// const x1 = moment().format("x");
-// console.log(x, x1);
-
 // Check if the current time is within 500ms of the timestamp
 // If it is, prepare data and send to discord webhook
 function checkData() {
   const nowM = moment().valueOf();
-  // console.log(now, nowM);
   waktuSolat.forEach((el) => {
     const k = Object.keys(el)[0];
     const v = el[k];
