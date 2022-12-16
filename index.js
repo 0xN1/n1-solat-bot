@@ -26,22 +26,22 @@ const timestamps = json.prayerTime.map((item) => {
 });
 
 // Get today's date in the format dd-MMM-yyyy
-// const today = new Date()
-//   .toLocaleDateString("en-MY", {
-//     day: "numeric",
-//     month: "short",
-//     year: "numeric",
-//   })
-//   .split(" ")
-//   .join("-");
+const todayOld = new Date()
+  .toLocaleDateString("en-MY", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  })
+  .split(" ")
+  .join("-");
 
 const today = moment().format("DD-MMM-YYYY");
-// console.log(today);
+console.log(todayOld, today);
 
 const nau = Date.now();
-// const momentNow = moment().format("x");
+const mNau = moment().format("x");
 
-// console.log(momentNow, nau);
+console.log(nau, mNau);
 
 // Get all the data for today
 const day = timestamps.find((item) => {
