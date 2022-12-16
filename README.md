@@ -15,23 +15,18 @@ npm install
 yarn
 ```
 
+Create a .env file and enter your Discord Webhook URL
+
+```
+DISCORD_WEBHOOK_URL=YOUR_DISCORD_WEBHOOK
+```
+
 Spin up dev server
 
 ```
 npm run dev
 yarn dev
 ```
-
-Change Discord webhook URL in config.json
-
-```
-{
-  "APP_NAME": "Waktu Solat",
-  "WEBHOOK_URL": THIS_HERE
-}
-```
-
----
 
 ## Deploy
 
@@ -48,19 +43,13 @@ Or you could deploy on Railway
 
 Set the Discord Webhook URL in the environment variables
 
----
-
 ## Data source
 
 Yearly data from [e-solat](https://www.e-solat.gov.my/index.php?r=esolatApi/takwimsolat&period=year&zone=WLY01)
 
----
-
 ## Future
 
 - Option to easily change the zone
-
----
 
 ## Thanks
 
