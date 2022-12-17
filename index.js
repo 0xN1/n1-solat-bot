@@ -11,6 +11,8 @@ const fetch = require("node-fetch");
 const moment = require("moment-timezone");
 require("dotenv").config();
 
+const DEBUG_MODE = false;
+
 const WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL;
 
 async function initDiscordHook() {
@@ -181,20 +183,67 @@ async function send() {
   console.log("Sent to discord!");
 }
 
+// Check if the last message was sent
+let lastSent = false;
+
+// Trigger lastSent to true
+// This will prevent the bot from spamming the webhook
+function triggerSent() {
+  lastSent = true;
+  console.log("Triggered lastSent to true");
+
+  setTimeout(() => {
+    // Reset lastSent to false after 1 minute
+    lastSent = false;
+  }, 1000 * 60 * 1);
+}
+
+// Test Data
+const testWaktuSolat = [
+  { fajr: 1671256100000 },
+  { dhuhr: 1671256200000 },
+  { asr: 1671256300000 },
+  { maghrib: 1671256400000 },
+  { isha: 1671256500000 },
+];
+
+if (DEBUG_MODE) {
+  console.log("testWaktuSolat", testWaktuSolat);
+  console.log("waktuSolat", waktuSolat);
+}
+
 // Check if the current time is within 1s of the timestamp
 // If it is, prepare data and send to discord webhook
 function checkData() {
   const nowM = moment().valueOf();
-  waktuSolat.forEach((el) => {
-    const k = Object.keys(el)[0];
-    const v = el[k];
-    const check = nowM < v + 1000 && nowM > v - 1000;
 
-    if (check) {
-      prepareData(k);
-      send();
-    }
-  });
+  if (DEBUG_MODE) {
+    testWaktuSolat.forEach((el) => {
+      const k = Object.keys(el)[0];
+      const v = el[k];
+      const check = nowM < v + 1000 && nowM > v - 1000;
+
+      if (check) {
+        if (lastSent) return console.log("Last sent", lastSent);
+        triggerSent();
+        prepareData(k);
+        send();
+      }
+    });
+  } else {
+    waktuSolat.forEach((el) => {
+      const k = Object.keys(el)[0];
+      const v = el[k];
+      const check = nowM < v + 1000 && nowM > v - 1000;
+
+      if (check) {
+        if (lastSent) return;
+        triggerSent();
+        prepareData(k);
+        send();
+      }
+    });
+  }
 }
 
 // Check every second
