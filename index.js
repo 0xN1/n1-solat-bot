@@ -78,6 +78,8 @@ const combined = filteredKeys.map((key, index) => {
 // The updated data
 const waktuSolat = combined;
 
+console.log(waktuSolat);
+
 // Discord webhook data
 const embedData = {
   content: null,
@@ -179,14 +181,14 @@ async function send() {
   console.log("Sent to discord!");
 }
 
-// Check if the current time is within 500ms of the timestamp
+// Check if the current time is within 1s of the timestamp
 // If it is, prepare data and send to discord webhook
 function checkData() {
   const nowM = moment().valueOf();
   waktuSolat.forEach((el) => {
     const k = Object.keys(el)[0];
     const v = el[k];
-    const check = nowM < v + 500 && nowM > v - 500;
+    const check = nowM < v + 1000 && nowM > v - 1000;
 
     if (check) {
       prepareData(k);
