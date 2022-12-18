@@ -1,3 +1,5 @@
 {
-  "APP_NAME": "Waktu Solat"
+  "APP_NAME": "Waktu Solat",
+  "dynamic": "true",
+  "zone": "WLY01"
 }

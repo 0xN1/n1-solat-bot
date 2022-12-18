@@ -1,8 +1,8 @@
 //
-//  Project: Waktu Solat Discord Webhook Bot
-//  Author:  Muhammad Syahman (0xN1)
-//  Date:    2021-10-15
-//  Data:    2022-solat.json from JAKIM (https://www.e-solat.gov.my/index.php?r=esolatApi/takwimsolat&period=year&zone=WLY01)
+//  Project     : Waktu Solat Discord Webhook Bot
+//  Author      : Muhammad Syahman (0xN1)
+//  Last Update : 18 Dec 2022
+//  Data        : e-solat JAKIM (https://www.e-solat.gov.my/index.php?r=esolatApi/takwimsolat&period=year&zone=WLY01)
 //
 
 const fs = require("fs");
@@ -11,76 +11,91 @@ const fetch = require("node-fetch");
 const moment = require("moment-timezone");
 require("dotenv").config();
 
+const config = require("./config.json");
+
 const DEBUG_MODE = false;
-
 const WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL;
+const LOG_WEBHOOK_URL = process.env.LOG_DISCORD_WEBHOOK_URL;
 
-async function initDiscordHook() {
-  try {
-    console.log("Sending test to discord...");
-    const hook = WEBHOOK_URL;
-    const data = {
-      content: "waktu-solat-bot is running!",
-    };
-    await fetch(hook, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
-    console.log("Sent test to discord!");
-  } catch (error) {
-    return console.log(error);
-  }
-}
+let waktuSolat;
 
-initDiscordHook();
-
+// Set the timezone
 moment.tz.setDefault("Asia/Kuala_Lumpur");
 
-// Get the data from the json file
-const jsonPath = path.join(__dirname, "./data/2022-solat.json");
+// Get the initial data from the json file
+const jsonPath = path.join(__dirname, "./data/solatData.json");
 
 // Read the file
-const json = JSON.parse(fs.readFileSync(jsonPath, "utf8"));
+let json = JSON.parse(fs.readFileSync(jsonPath, "utf8"));
 
-// Get all the timestamps
-const timestamps = json.prayerTime.map((item) => {
-  return item;
-});
+// Get the updated data from the API
+async function getUpdatedData() {
+  const res = await fetch(
+    "https://www.e-solat.gov.my/index.php?r=esolatApi/takwimsolat&period=year&zone=" +
+      config.zone
+  ).then((res) => res.json());
+  json = res;
+}
 
-// Get today's date
-const today = moment().format("DD-MMM-YYYY");
+// create a function to store updated data to json file
+function updateData() {
+  return fs.writeFile(jsonPath, JSON.stringify(json, null, 2), (err) => {
+    if (err) throw err;
+    console.log("Data updated");
+  });
+}
 
-// Get all the data for today
-const day = timestamps.find((item) => {
-  return item.date === today;
-});
+// Process data
+async function processData() {
+  // Get all the timestamps
+  const timestamps = await json.prayerTime.map((item) => {
+    return item;
+  });
+  // console.log("timestamps:\n", timestamps);
 
-// Filter out the keys we want
-const filteredKeys = ["fajr", "dhuhr", "asr", "maghrib", "isha"];
-const filtered = Object.entries(day)
-  .filter(([key]) => filteredKeys.includes(key))
-  .map((item) => item[1]);
+  // Get today's date
+  const today = moment().format("DD-MMM-YYYY");
+  // console.log("today:\n", today);
 
-// Convert to timestamp
-const converted = filtered.map((item) => {
-  const iso = moment(day.date).format("YYYY-MM-DD");
-  const dmIso = iso + " " + item;
-  const momentParseIso = moment(dmIso).valueOf();
-  return momentParseIso;
-});
+  // Get all the data for today
+  const day = await timestamps.find((item) => {
+    return item.date === today;
+  });
+  // console.log("day:\n", day);
+  sendLog(
+    "Processed data (" +
+      day.date +
+      "):\n```\n" +
+      JSON.stringify(day, null, 2) +
+      "\n```"
+  );
 
-// Combine the keys and values
-const combined = filteredKeys.map((key, index) => {
-  return { [key]: converted[index] };
-});
+  // Filter out the keys we want
+  const filteredKeys = ["fajr", "dhuhr", "asr", "maghrib", "isha"];
+  const filtered = Object.entries(day)
+    .filter(([key]) => filteredKeys.includes(key))
+    .map((item) => item[1]);
+  // console.log("filtered:\n", filtered);
 
-// The updated data
-const waktuSolat = combined;
+  // Convert to timestamp
+  const converted = filtered.map((item) => {
+    const iso = moment(day.date).format("YYYY-MM-DD");
+    const dmIso = iso + " " + item;
+    const momentParseIso = moment(dmIso).valueOf();
+    return momentParseIso;
+  });
+  // console.log("converted:\n", converted);
 
-console.log(waktuSolat);
+  // Combine the keys and values
+  const combined = filteredKeys.map((key, index) => {
+    return { [key]: converted[index] };
+  });
+  // console.log("combined:\n", combined);
+
+  // The updated data
+  waktuSolat = combined;
+  console.log("data processed\nwaktuSolat:\n", waktuSolat);
+}
 
 // Discord webhook data
 const embedData = {
@@ -214,11 +229,11 @@ if (DEBUG_MODE) {
 
 // Check if the current time is within 1s of the timestamp
 // If it is, prepare data and send to discord webhook
-function checkData() {
+async function checkData() {
   const nowM = moment().valueOf();
 
   if (DEBUG_MODE) {
-    testWaktuSolat.forEach((el) => {
+    await testWaktuSolat.forEach((el) => {
       const k = Object.keys(el)[0];
       const v = el[k];
       const check = nowM < v + 1000 && nowM > v - 1000;
@@ -231,7 +246,7 @@ function checkData() {
       }
     });
   } else {
-    waktuSolat.forEach((el) => {
+    await waktuSolat.forEach((el) => {
       const k = Object.keys(el)[0];
       const v = el[k];
       const check = nowM < v + 1000 && nowM > v - 1000;
@@ -246,12 +261,66 @@ function checkData() {
   }
 }
 
+async function sendLog(msg) {
+  try {
+    if (!LOG_WEBHOOK_URL) return;
+    console.log("Sending log to discord...");
+    const hook = LOG_WEBHOOK_URL;
+    const data = {
+      content: msg,
+    };
+    await fetch(hook, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+    console.log("Sent log to discord!");
+  } catch (error) {
+    return console.log(error);
+  }
+}
+
 // Check every second
 setInterval(() => {
   checkData();
 }, 1000);
 
+// Check data every hour
+setInterval(() => {
+  processData();
+  sendLog("waktuSolat:\n", waktuSolat);
+  console.log("waktuSolat:\n", waktuSolat);
+}, 1000 * 60 * 60 * 1);
+
+// Get updated data every day
+setInterval(async () => {
+  getUpdatedData();
+  sendLog("data status: ", json.status, "\ndata serverTime: ", json.serverTime);
+  console.log(
+    "data status: ",
+    json.status,
+    "\ndata serverTime: ",
+    json.serverTime
+  );
+}, 1000 * 60 * 60 * 24 * 1);
+
 console.log("Bot is running...");
 
-// Run the bot
-checkData();
+async function run() {
+  await getUpdatedData();
+  updateData();
+  console.log(
+    "data status: ",
+    json.status,
+    "\ndata serverTime: ",
+    json.serverTime
+  );
+  await sendLog(`Latest update: <t:${moment(json.serverTime).format("X")}:R>`);
+}
+
+sendLog("Waktu Solat Bot is now online!");
+run();
+sendLog(`Current data update: <t:${moment(json.serverTime).format("X")}:R>`);
+processData();
