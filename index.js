@@ -18,6 +18,7 @@ const WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL;
 const LOG_WEBHOOK_URL = process.env.LOG_DISCORD_WEBHOOK_URL;
 
 let waktuSolat;
+let day;
 
 // Set the timezone
 moment.tz.setDefault("Asia/Kuala_Lumpur");
@@ -48,7 +49,7 @@ function updateData() {
 // Process data
 async function processData() {
   // Get all the timestamps
-  const timestamps = await json.prayerTime.map((item) => {
+  const timestamps = json.prayerTime.map((item) => {
     return item;
   });
   // console.log("timestamps:\n", timestamps);
@@ -58,7 +59,7 @@ async function processData() {
   // console.log("today:\n", today);
 
   // Get all the data for today
-  const day = await timestamps.find((item) => {
+  day = timestamps.find((item) => {
     return item.date === today;
   });
   // console.log("day:\n", day);
