@@ -31,11 +31,15 @@ let json = JSON.parse(fs.readFileSync(jsonPath, "utf8"));
 
 // Get the updated data from the API
 async function getUpdatedData() {
-  const res = await fetch(
-    "https://www.e-solat.gov.my/index.php?r=esolatApi/takwimsolat&period=year&zone=" +
-      config.zone
-  ).then((res) => res.json());
-  json = res;
+  try {
+    const res = await fetch(
+      "https://www.e-solat.gov.my/index.php?r=esolatApi/takwimsolat&period=year&zone=" +
+        config.zone
+    ).then((res) => res.json());
+    json = res;
+  } catch (error) {
+    console.log(error);
+  }
 }
 
 // create a function to store updated data to json file
